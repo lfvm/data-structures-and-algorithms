@@ -1,0 +1,76 @@
+"""
+417. Pacific Atlantic Water Flow
+https://leetcode.com/problems/pacific-atlantic-water-flow/description/
+
+There is an m x n rectangular island that borders both the Pacific Ocean and Atlantic Ocean. The Pacific Ocean touches the island's left and top edges, and the Atlantic Ocean touches the island's right and bottom edges.
+
+The island is partitioned into a grid of square cells. You are given an m x n integer matrix heights where heights[r][c] represents the height above sea level of the cell at coordinate (r, c).
+
+The island receives a lot of rain, and the rain water can flow to neighboring cells directly north, south, east, and west if the neighboring cell's height is less than or equal to the current cell's height. Water can flow from any cell adjacent to an ocean into the ocean.
+
+Return a 2D list of grid coordinates result where result[i] = [ri, ci] denotes that rain water can flow from cell (ri, ci) to both the Pacific and Atlantic oceans.
+
+
+"""
+
+
+
+class Solution:
+    def pacificAtlantic(self, heights: List[List[int]]) -> List[List[int]]:
+        """
+            1. Check all elements that can reach pacific ocean 
+
+                That would be all columns in the first rows and 
+                the first column of each row 
+
+
+            2. Check all elements that can reach altantic ocean 
+
+                That would be all columns in last rows and 
+                the last column of each row     
+
+            3. return all cells which are both on pacific and atlantic 
+
+        """
+
+        def dfs(r, c, visit, prevValue):
+
+            if ( 
+                ((r,c) in visit) or
+                # Out of bounds 
+                (r not in range(ROWS) or c not in range(COLS)) or
+                # Can not follow the path because height is < prevValue 
+                # Water can only flow downwards
+                heights[r][c] < prevValue 
+            ): 
+                return 
+            visit.add((r,c))
+            dfs(r+1, c, visit,heights[r][c])
+            dfs(r-1, c, visit,heights[r][c])
+            dfs(r, c+1, visit,heights[r][c])
+            dfs(r, c-1, visit,heights[r][c])
+
+
+
+        ROWS,COLS = len(heights), len(heights[0])
+        # Representing postions that can reach pacific and atlatic ocean respectevly 
+        pac, atl = set(), set()
+        for c in range(COLS):
+
+            # All columns in pacific (first row)
+            dfs(0,c, pac, heights[0][c])
+            # All columns in atlantic (last row)
+            dfs(ROWS-1,c, atl, heights[ROWS-1][c])
+
+        for r in range(ROWS):
+            dfs(r,0, pac, heights[r][0])
+            dfs(r,COLS - 1, atl, heights[r][COLS - 1 ]) 
+
+        res = []
+        for r in range(ROWS):
+            for c in range(COLS):
+                if (r,c) in pac and (r,c) in atl: 
+                    res.append([r,c])
+
+        return res
+
